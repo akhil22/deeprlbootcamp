@@ -205,7 +205,15 @@ class DQN(object):
         # Hint2: Q-function can be called by self._q.forward(argument)
         # Hint3: You might also find https://docs.chainer.org/en/stable/reference/generated/chainer.functions.select_item.html useful
         loss = C.Variable(np.array([0.]))  # TODO: replace this line
-        "*** YOUR CODE HERE ***"
+       # a_space = np.array([[i*1.0] for i in range(0,self._act_dim)])
+        #print(self._q.forward(np.concatenate((l_next_obs,np.array([l_act]).T),axis=1)))
+      #  print(self._q.forward(l_obs))
+        y_t = l_rew + (1-l_done)*self._discount*F.max(self._qt.forward(l_next_obs),1)
+        idx = [[i for i in range(0,len(l_act))],list(l_act.data[:])]
+        y =  self._q.forward(l_obs)[idx]
+        loss = F.mean(F.square(y-y_t))
+       # print(loss)
+        #"*** YOUR CODE HERE ***"
         return loss
 
     def compute_double_q_learning_loss(self, l_obs, l_act, l_rew, l_next_obs, l_done):
@@ -241,6 +249,7 @@ class DQN(object):
             var.cleargrad()
         loss.backward()
         for var, adam in zip(self._q.train_vars, self.lst_adam):
+            #print(var.grad)
             var.data += adam.step(var.grad)
         return loss.data
 
